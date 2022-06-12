@@ -232,6 +232,14 @@ class Source2Lens():
     
 
     def train(self,epochs,batch_size=128,sample_interval=20):
+
+        """
+
+        :param epochs: training epoches
+        :param batch_size:
+        :param sample_interval:
+        :return:
+        """
         #gain datasets
         n_single = 100
         
