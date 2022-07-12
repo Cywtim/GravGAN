@@ -21,10 +21,10 @@ if __name__ == '__main__':
                        epochs=5000, batch_size=128,
                        train_lb_path="/project/Redshift_Difference/GravGan/SIElensed",
                        progress=True, progress_interval=50, progress_save=True,
-                       progress_file="/project/Redshift_Difference/GravGan/SIEresult/progress.log",
+                       progress_file="/project/Redshift_Difference/GravGan/SIEresult/progress_cpu.log",
                        plot_image=True, save_plots=True, plot_save_iter=100,
                        save_plots_path="/project/Redshift_Difference/GravGan/SIEresult",
                        save_plots_type="pdf", save_iter=50,
-                       savegfile="/project/Redshift_Difference/GravGan/SIEresult/Generator",
-                       savedfile="/project/Redshift_Difference/GravGanSIEresult/Descriminator",
+                       savegfile="/project/Redshift_Difference/GravGan/SIEresult/GeneratorCPU",
+                       savedfile="/project/Redshift_Difference/GravGanSIEresult/DescriminatorCPU",
                        )

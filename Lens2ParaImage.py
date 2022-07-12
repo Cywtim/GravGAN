@@ -28,10 +28,9 @@ import tensorflow.keras.utils as utils
 class LensReconstruction():
     # this code is aimed at get the reverse source image from a lens image
     def __init__(self, trainset_path, testset_path,
-                 para_path = None,
                  img_size=(256, 256, 1),
                  lbl_size=(256, 256, 1),
-                 para_len = 6,
+                 para_len = 7,
                  generator_first=16, discriminator_first=8,
                  kerasoptimizer=keras.optimizers.Adam, learning_rate=(0.001, 0.9),
                  discriminator_losses='mse', discriminator_metrics=['accuracy'],
@@ -62,7 +61,6 @@ class LensReconstruction():
         # data pass
         self.trainset_path = trainset_path
         self.testset_path = testset_path
-        self.para_path = para_path
 
         # 32x32x1 shape_input; input the lensed image
         self.img_rows = img_size[0]
@@ -117,7 +115,7 @@ class LensReconstruction():
                               loss_weights=loss_weights
                               , optimizer=optimizer)
 
-    def load_para(self,para_path, str_num, para_type="txt"):
+    def load_para(self,para_path, str_num, para_type="csv", para_split=","):
 
         str_num = str(str_num)
         str_num = str_num.zfill(6)
@@ -125,15 +123,18 @@ class LensReconstruction():
 
         with open(file_path, 'r') as paraf:
             para = paraf.readlines(file_path)
+            [float(i) for i in para[0].split(para_split)]
 
         return para
 
     def batch_load_para(self, batch_list, fold_path,
-                        lbl_type="txt"):
+                        para_type="csv", para_split=","):
 
         batch_lbl = []
         for i in range(len(batch_list)):
-            lbl = self.load_para(fold_path, batch_list[i], para_type=lbl_type)
+            lbl = self.load_para(fold_path, batch_list[i],
+                                 para_type=para_type,
+                                 para_split=para_split)
             batch_lbl.append(lbl)
 
         return np.array(batch_lbl)

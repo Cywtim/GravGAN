@@ -12,6 +12,7 @@ CHENGYI
 import os
 import sys
 sys.path.append("..")
+import pandas as pd
 import imageio
 import numpy as np
 import mock_lens_generator as mock_lens
@@ -55,4 +56,9 @@ for num in range(num_fig):
     #noisy
     source_noisy = lens.add_poisson_noisy(source_psf)
 
-    imageio.imsave(main_d + r"\lensed\image_" + str_num +r".jpg",source_noisy)
+    imageio.imsave(main_d + r"\SIElensed\image_" + str_num +r".jpg",source_noisy)
+
+    para_file = main_d + r"SIEpara\image_" + str_num + r".csv"
+    with open(para_file, "w") as pfile:
+        paras = [theta_E[num], e1[num], e2[num], center_x[num], center_y[num], gamma1[num], gamma2[num]]
+        pfile.write(",".join(str(i) for i in paras))

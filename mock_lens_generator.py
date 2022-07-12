@@ -22,8 +22,8 @@ import lenstronomy.Util.kernel_util as kernel_util
 
 class Mock_Lens_Generator:
 
-    def __init__(self,main_halo_type,kwargs_lens_main,kwargs_shear,shear="SHEAR",
-                 subhalo_type=None,kwargs_subhalo=None):
+    def __init__(self, main_halo_type, kwargs_lens_main, kwargs_shear, shear="SHEAR",
+                 subhalo_type=None, kwargs_subhalo=None):
 
 
         #define the main lens model
