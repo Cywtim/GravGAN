@@ -58,7 +58,7 @@ for num in range(num_fig):
 
     imageio.imsave(main_d + r"\SIElensed\image_" + str_num +r".jpg",source_noisy)
 
-    para_file = main_d + r"SIEpara\image_" + str_num + r".csv"
+    para_file = main_d + r"\SIEpara\image_" + str_num + r".csv"
     with open(para_file, "w") as pfile:
         paras = [theta_E[num], e1[num], e2[num], center_x[num], center_y[num], gamma1[num], gamma2[num]]
         pfile.write(",".join(str(i) for i in paras))
