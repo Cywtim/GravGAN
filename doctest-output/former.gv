@@ -1,0 +1,18 @@
+// The Round Table
+digraph former {
+	l [label="Lensed Image"]
+	s [label="Source Image"]
+	g [label=Generator]
+	d [label=Discriminator]
+	f [label="Fake Image"]
+	o [label=Output]
+	c [label=concatenate]
+	l -> g
+	g -> f
+	s -> c
+	f -> c
+	c -> d
+	d -> s
+	d -> l
+	d -> o
+}

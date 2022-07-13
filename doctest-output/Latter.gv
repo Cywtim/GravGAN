@@ -1,0 +1,33 @@
+digraph G {
+	compound=true
+	l [label="Lensed Image"]
+	s [label="Source Image"]
+	g [label=Generator]
+	d [label=Discriminator]
+	f [label="Fake Image"]
+	w [label="Fake parameter"]
+	o [label=Output]
+	c [label=concatenate]
+	x [label="Concatenate image"]
+	z [label="concatenate parameter"]
+	p [label=Parameters]
+	f -> x
+	s -> x
+	w -> z
+	p -> z
+	subgraph Generator {
+		l -> g
+		g -> f
+		g -> w
+	}
+	subgraph Discriminator {
+		x -> c
+		w -> c
+		z -> c
+		c -> d
+		d -> l
+		d -> s
+		d -> p
+	}
+	d -> o
+}
