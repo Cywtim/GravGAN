@@ -102,15 +102,15 @@ class LensReconstruction():
         images = Input(shape=self.img_shape)
         labels = Input(shape=self.lbl_shape)
         paras = Input(shape=(self.para_len,))
-        fakes = self.generator([labels, paras])
+        [fpara, fakes] = self.generator(labels)
 
         # fix discriminator when training generator
         self.discriminator.trainable = False
 
         # discriminator
-        valid = self.discriminator(fakes)
+        valid = self.discriminator([fpara, fakes, labels])
 
-        self.combined = Model(inputs=[images, labels, paras], outputs=[valid, fakes])
+        self.combined = Model(inputs=[paras, images, labels], outputs=[valid, fpara, fakes])
         self.combined.compile(loss=g_losses,
                               loss_weights=loss_weights
                               , optimizer=optimizer)
@@ -237,27 +237,58 @@ class LensReconstruction():
         model.add(Conv2D(self.img_channels, kernel_size=3, padding="same"))
         model.add(Activation("tanh"))
 
+        #-----------------------#
+        #---parameter output----#
+        #-----------------------#
+        para = Sequential()
+
+        # n, n, 1 --> n/2, n/2, 8
+        para.add(Conv2D(8, kernel_size=3, strides=2,
+                         padding="same", input_shape=(self.lbl_rows, self.lbl_cols, self.lbl_channels)))
+        para.add(BatchNormalization(momentum=0.8))
+        para.add(Activation('relu'))
+
+        # n/2, n/2, 8 --> n/4, n/4, 64
+        para.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
+        para.add(BatchNormalization(momentum=0.8))
+        para.add(Activation("relu"))
+
+        # n/4, n/4, 64 --> n/8, n/8, 64
+        para.add(Conv2D(64, kernel_size=3, strides=2, padding='same'))
+        para.add(BatchNormalization(momentum=0.8))
+        para.add(Activation('relu'))
+
+        # n/8, n/8, 64--> n/16, n/16, 128
+        para.add(Conv2D(128, kernel_size=3, strides=2, padding='same'))
+        para.add(BatchNormalization(momentum=0.8))
+        para.add(Activation('relu'))
+
+        # n/16, n/16, 128 --> n/32, n/32, 256
+        para.add(Conv2D(256, kernel_size=3, strides=2, padding='same'))
+        para.add(BatchNormalization(momentum=0.8))
+        para.add(Activation('relu'))
+
+        # to 1d
+        para.add(GlobalAveragePooling2D())
+
+        para.add(Dense(self.lbl_rows*self.lbl_channels, activation='relu'))
+        para.add(Dropout(.2))
+
+        para.add(Dense(self.para_len, activation='relu'))
+        para.add(Dropout(.2))
+
         ##################
         # Input and noise#
         ##################
 
         # label input layer
-        source_input = Input(shape=(self.lbl_rows, self.lbl_cols, self.lbl_channels))
-
-        para_input = Input(shape=(self.para_len,))
-        para_dense_1 = Dense(self.lbl_rows, activation="relu")(para_input)
-        para_drop_1 = Dropout(.2)(para_dense_1)
-        para_dense_2 = Dense(self.lbl_rows*self.lbl_cols, activation="relu")(para_drop_1)
-        para_drop_2 = Dropout(.2)(para_dense_2)
-        para_dense_3 = Dense(self.lbl_rows*self.lbl_cols*self.lbl_channels, activation="relu")(para_drop_2)
-        para_reshape = Reshape((self.lbl_rows, self.lbl_cols, self.lbl_channels))(para_dense_3)
-
-        model_input = Concatenate()([source_input, para_input])
+        lbl_input = Input(shape=(self.lbl_rows, self.lbl_cols, self.lbl_channels))
 
         # output layer
-        img = model(model_input)
+        img = model(lbl_input)
+        para_output = para(lbl_input)
 
-        return Model([source_input, para_input], img)
+        return Model(lbl_input, [para_output, img])
 
     def lens2source_discriminator(self):
         # -------------------------------------------------------- #
@@ -319,7 +350,7 @@ class LensReconstruction():
         # judge whether the features are right or not
         valid = Dense(1, activation='sigmoid')(features)
 
-        return Model([img, lbl, para], valid)
+        return Model([para, img, lbl], valid)
 
     def lens2source_train(self, epochs, batch_size=128, train_im_path="gray",
               train_lb_path="lensed", train_para_path="para",
