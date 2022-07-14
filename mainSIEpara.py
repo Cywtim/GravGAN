@@ -17,7 +17,7 @@ if __name__ == '__main__':
                       img_size=(256, 256, 1),
                       lbl_size=(256, 256, 1))
     real_1 = Gan.lens2source_train(
-                       epochs=100, batch_size=16,
+                       epochs=100, batch_size=8,
                        train_lb_path="SIElensed",
                        train_para_path="SIEpara",
                        progress=True, progress_interval=1, progress_save=True,

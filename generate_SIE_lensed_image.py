@@ -47,7 +47,7 @@ for num in range(num_fig):
     kwargs_shear = {'gamma1': gamma1[num], 'gamma2': gamma2[num]}
     lens_model_list = main_halo_type
     lens = mock_lens.Mock_Lens_Generator(lens_model_list, kwargs_lens_main, kwargs_shear)
-    source_lensed = lens.shapelet_lens_image(main_d+file_path,factor=1,
+    source_lensed = lens.shapelet_lens_image(main_d+file_path,factor=1, high_res_factor=2.56,
                                              lens_center_x=lens_center_x[num],
                                              lens_center_y=lens_center_y[num])
 
@@ -56,7 +56,7 @@ for num in range(num_fig):
     #noisy
     source_noisy = lens.add_poisson_noisy(source_psf)
 
-    imageio.imsave(main_d + r"\SIElensed\image_" + str_num +r".jpg",source_noisy)
+    imageio.imsave(main_d + r"\SIElensed\image_" + str_num +r".png",source_noisy)
 
     para_file = main_d + r"\SIEpara\image_" + str_num + r".csv"
     with open(para_file, "w") as pfile:

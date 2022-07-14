@@ -122,10 +122,10 @@ class LensReconstruction():
         file_path = para_path + r"/image_" + str_num + r"." + para_type
 
         with open(file_path, 'r') as paraf:
-            para = paraf.readlines(file_path)
-            [float(i) for i in para[0].split(para_split)]
+            para = paraf.readlines()
+            para = [float(i) for i in para[0].split(para_split)]
 
-        return para
+        return np.array(para)
 
     def batch_load_para(self, batch_list, fold_path,
                         para_type="csv", para_split=","):
@@ -354,7 +354,7 @@ class LensReconstruction():
 
     def lens2source_train(self, epochs, batch_size=128, train_im_path="gray",
               train_lb_path="lensed", train_para_path="para",
-              img_type="png", para_type="txt",
+              img_type="png", lb_type="png", para_type="csv",
               readmethod=cv2.IMREAD_GRAYSCALE,
               progress=False, progress_interval=20, progress_save=True, progress_file="result/progress.log",
               plot_image=False, show_plots=False,
@@ -413,7 +413,7 @@ class LensReconstruction():
                                              img_type=img_type,
                                              readmethod=readmethod)
             lb_train = self.batch_load_image(batch_list, train_lb_path,
-                                             img_type=img_type,
+                                             img_type=lb_type,
                                              readmethod=readmethod)
             para_train = self.batch_load_para(batch_list,
                                               train_para_path,
@@ -434,14 +434,14 @@ class LensReconstruction():
             idx_noise = np.random.randint(0, im_train.shape[0], batch_size)
             imgs, labels, paras = im_train[idx], lb_train[idx], para_train[idx]  # n x n # n x n
             fake_label = lb_train[idx_noise]  # batch_size of n x n matrix
-            fake_para = para_train[idx_noise]
+            #fake_para = para_train[idx_noise]
 
             # generate fake images
-            gen_imgs = self.generator.predict([fake_label, fake_para])
+            fake_para, gen_imgs = self.generator.predict(fake_label)
 
             self.discriminator.trainable = True
-            d_loss_real = self.discriminator.train_on_batch([imgs, labels, paras], valid)
-            d_loss_fake = self.discriminator.train_on_batch([gen_imgs, labels, paras], fake)
+            d_loss_real = self.discriminator.train_on_batch([ paras, imgs, labels ], valid)
+            d_loss_fake = self.discriminator.train_on_batch([ fake_para, gen_imgs, labels ], fake)
             d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
 
             ##################
@@ -449,7 +449,7 @@ class LensReconstruction():
             ##################
 
             self.discriminator.trainable = False
-            g_loss = self.combined.train_on_batch([imgs, labels, paras], [valid, imgs])
+            g_loss = self.combined.train_on_batch([ paras, imgs, labels ], [valid, paras, imgs])
 
             ##########
             # output #
