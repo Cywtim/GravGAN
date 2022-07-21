@@ -420,10 +420,10 @@ class LensReconstruction():
                                               para_type=para_type)
 
             """set the gaussian as train data"""
-            im_train = im_train.astype(np.float32) / 127.5 - 1
+
             if len(im_train.shape) == 3:
                 im_train = np.expand_dims(im_train, axis=3)
-            lb_train = lb_train.astype(np.float32) / 127.5 - 1
+
             if len(lb_train.shape) == 3:
                 lb_train = np.expand_dims(lb_train, axis=3)
 
