@@ -11,18 +11,20 @@ from Lens2Image import LensReconstruction
 if __name__ == '__main__':
 
     # data[0] source ; data[1] lens
-    datapass = ["gray", "SIElensed"]
+    datapass = ["gray", "lensed"]
 
     Gan = LensReconstruction(datapass, datapass,
-                      img_size=(256, 256, 1),
-                      lbl_size=(256, 256, 1))
+                      img_size=(64, 64, 1),
+                      lbl_size=(64, 64, 1))
     real_1 = Gan.lens2source_train(
-                       epochs=100, batch_size=16,
-                       train_lb_path="SIElensed",
-                       progress=True, progress_interval=1, progress_save=True,
-                       progress_file="SIEresult/progress.log",
-                       plot_image=False,
+                       epochs=500, batch_size=64,
+                       train_lb_path="lensed_shrink_64",
+                       train_im_path="img_shrink_64",
+                       progress=True, progress_interval=10, progress_save=True,
+                       progress_file="SIEresult_64/progress.log",
+                       plot_image=True, plot_save_iter=10,
+                       save_plots_path="SIEresult_64", save_plots_type="png",
                        save_iter=50,
-                       savegfile="SIEresult/Generator",
-                       savedfile="SIEresult/Descriminator",
+                       savegfile="SIEresult_64/Generator",
+                       savedfile="SIEresult_64/Descriminator",
                        )

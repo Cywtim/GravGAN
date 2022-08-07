@@ -27,7 +27,7 @@ import tensorflow.keras.utils as utils
 
 class LensReconstruction():
     # this code is aimed at get the reverse source image from a lens image
-    def __init__(self, trainset_path, testset_path,
+    def __init__(self,
                  img_size=(32, 32, 1),
                  lbl_size=(64, 64, 1),
                  generator_first=16, discriminator_first=8,
@@ -274,7 +274,7 @@ class LensReconstruction():
               readmethod=cv2.IMREAD_GRAYSCALE,
               progress=False, progress_interval=20, progress_save=True, progress_file="result/progress.log",
               plot_image=False, show_plots=False,
-              save_plots=True, plot_save_iter=50, save_plots_path="result", save_plots_type="pdf",
+              save_plots=True, plot_save_iter=50, save_plots_path="result", save_plots_type="png",
               save_iter=100, savegfile=None, savedfile=None,
               g_summary=False, g_summary_path=None,
               d_summary=False, d_summary_path=None):
@@ -320,22 +320,19 @@ class LensReconstruction():
 
         #load data
         im_train = np.load(train_im_file)
+        im_train = np.expand_dims(im_train, axis=3)
+        im_train = im_train/127.5 - 1
         lb_train = np.load(train_lb_file)
+        lb_train = np.expand_dims(lb_train, axis=3)
+        lb_train = lb_train/127.5 - 1
+
 
         for epoch in range(epochs):
 
             # gain datasets
             #select batch numbers
-            batch_list = np.random.randint([400 for i in range(128)])
+            batch_list = np.random.randint([400 for i in range(batch_size)])
             # the im_train/lb_train is in form of (number, row, col, channel)
-
-            """set the gaussian as train data"""
-            im_train = im_train.astype(np.float32) / 127.5 - 1
-            if len(im_train.shape) == 3:
-                im_train = np.expand_dims(im_train, axis=3)
-            lb_train = lb_train.astype(np.float32) / 127.5 - 1
-            if len(lb_train.shape) == 3:
-                lb_train = np.expand_dims(lb_train, axis=3)
 
 
             # choose random batch images to train discriminator
@@ -378,14 +375,11 @@ class LensReconstruction():
             #output images
             if plot_image == True:
 
-                im_test = np.load(self.testset_path[0])
-                lb_test = np.load(self.testset_path[1])
-
                 test_rand = np.random.randint(0, len(im_train), batch_size)
-                test_imgs, test_labels = im_test[test_rand], lb_test[test_rand]  # n # n
+                test_imgs, test_labels = im_train[test_rand], lb_train[test_rand]  # n # n
                 test_gen_imgs = self.generator.predict(test_labels)
 
-                show_num = np.random.randint(128)
+                show_num = np.random.randint(batch_size)
                 plt.figure(1, figsize=(20, 6))
 
                 plt.subplot(131)
@@ -399,6 +393,7 @@ class LensReconstruction():
                 plt.subplot(133)
                 plt.imshow(test_gen_imgs[show_num].reshape(32, 32))
                 plt.title("predicted source (output)")
+
 
                 if show_plots == True:
                     plt.show()

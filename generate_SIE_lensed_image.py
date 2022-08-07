@@ -23,42 +23,42 @@ fold = os.listdir(main_d + fold_path)
 num_fig = len(fold) - 1
 
 theta_E = (np.random.random(num_fig) + 1 ) * 0.5
-e1 = np.random.uniform(-1,1,num_fig) * 0.8
-e2 = np.random.uniform(-1,1,num_fig) * 0.8
-center_x = np.random.uniform(-1,1,num_fig) * 0.3
-center_y = np.random.uniform(-1,1,num_fig) * 0.3
+e1 = np.random.uniform(-1,1,num_fig) * 0.5
+e2 = np.random.uniform(-1,1,num_fig) * 0.5
+center_x = np.random.uniform(-1,1,num_fig) * 0.4
+center_y = np.random.uniform(-1,1,num_fig) * 0.4
 gamma1 = np.random.uniform(0,1,num_fig) * 0.1
 gamma2 = np.random.uniform(0,1,num_fig) * 0.1
-lens_center_x =  np.random.uniform(-1,1,num_fig) * 0.5
-lens_center_y = np.random.uniform(-1,1,num_fig) * 0.5
+#lens_center_x =  np.random.uniform(-1,1,num_fig) * 0.5
+#lens_center_y = np.random.uniform(-1,1,num_fig) * 0.5
 
 
-psf_path = "\img\psf_example.fits"
+psf_path = "\psf_example.fits"
 for num in range(num_fig):
 
     str_num = str(num)
     str_num = str_num.zfill(6)
-    file_path = r"\img\image_" + str_num +r".jpg"
+    file_path = r"\img_shrink_256\image_" + str_num +r".png"
 
-    test_image = imageio.imread(main_d + file_path,as_gray=True, pilmode=None)
+    test_image = imageio.imread(main_d + file_path, as_gray=True, pilmode=None)
     main_halo_type = 'SIE'  # You have many other possibilities available. Check out the SinglePlane class!
     kwargs_lens_main = {'theta_E': theta_E[num], 'e1': e1[num],'e2': e2[num],
                         'center_x': center_x[num], 'center_y': center_y[num]}
     kwargs_shear = {'gamma1': gamma1[num], 'gamma2': gamma2[num]}
     lens_model_list = main_halo_type
     lens = mock_lens.Mock_Lens_Generator(lens_model_list, kwargs_lens_main, kwargs_shear)
-    source_lensed = lens.shapelet_lens_image(main_d+file_path,factor=1, high_res_factor=2.56,
-                                             lens_center_x=lens_center_x[num],
-                                             lens_center_y=lens_center_y[num])
+    source_lensed = lens.shapelet_lens_image(main_d+file_path, high_res_factor=2.56)
 
     #PSF file aslo in img floder
     source_psf = lens.PSF_conv(source_lensed,main_d + psf_path)
     #noisy
     source_noisy = lens.add_poisson_noisy(source_psf)
 
-    imageio.imsave(main_d + r"\SIElensed\image_" + str_num +r".png",source_noisy)
-
+    imageio.imsave(main_d + r"\lensed_shrink_256\image_" + str_num + r".png",source_lensed)
+    '''
     para_file = main_d + r"\SIEpara\image_" + str_num + r".csv"
     with open(para_file, "w") as pfile:
         paras = [theta_E[num], e1[num], e2[num], center_x[num], center_y[num], gamma1[num], gamma2[num]]
         pfile.write(",".join(str(i) for i in paras))
+    '''
+

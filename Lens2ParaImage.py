@@ -110,7 +110,7 @@ class LensReconstruction():
         # discriminator
         valid = self.discriminator([fpara, fakes, labels])
 
-        self.combined = Model(inputs=[paras, images, labels], outputs=[valid, fpara, fakes])
+        self.combined = Model(inputs=[paras, images, labels], outputs=[valid,  fakes])
         self.combined.compile(loss=g_losses,
                               loss_weights=loss_weights
                               , optimizer=optimizer)
@@ -432,7 +432,7 @@ class LensReconstruction():
             # get random labels
             idx = np.random.randint(0, im_train.shape[0], batch_size)
             idx_noise = np.random.randint(0, im_train.shape[0], batch_size)
-            imgs, labels, paras = im_train[idx], lb_train[idx], para_train[idx]  # n x n # n x n
+            imgs, labels, paras = im_train[idx]/127.5 - 1, lb_train[idx]/127.5 - 1, para_train[idx]  # n x n # n x n
             fake_label = lb_train[idx_noise]  # batch_size of n x n matrix
             #fake_para = para_train[idx_noise]
 
@@ -449,7 +449,7 @@ class LensReconstruction():
             ##################
 
             self.discriminator.trainable = False
-            g_loss = self.combined.train_on_batch([ paras, imgs, labels ], [valid, paras, imgs])
+            g_loss = self.combined.train_on_batch([ paras, imgs, labels ], [valid,  imgs])
 
             ##########
             # output #
@@ -468,26 +468,30 @@ class LensReconstruction():
             #output images
             if plot_image == True:
 
-                im_test = np.load(self.testset_path[0])
-                lb_test = np.load(self.testset_path[1])
+                im_test = self.batch_load_image(batch_list, train_im_path,
+                                                 img_type=img_type,
+                                                 readmethod=readmethod)
+                lb_test = self.batch_load_image(batch_list, train_lb_path,
+                                                 img_type=lb_type,
+                                                 readmethod=readmethod)
 
                 test_rand = np.random.randint(0, len(im_train), batch_size)
-                test_imgs, test_labels = im_test[test_rand], lb_test[test_rand]  # n # n
-                test_gen_imgs = self.generator.predict(test_labels)
+                test_imgs, test_labels = im_test[test_rand]/127.5 - 1, lb_test[test_rand]/127.5 - 1  # n # n
+                test_paras, test_gen_imgs = self.generator.predict(test_labels)
 
-                show_num = np.random.randint(128)
+                show_num = np.random.randint(batch_size)
                 plt.figure(1, figsize=(20, 6))
 
                 plt.subplot(131)
-                plt.imshow(test_imgs[show_num].reshape(32, 32))
+                plt.imshow(test_imgs[show_num].reshape(self.img_rows, self.img_cols))
                 plt.title("origin source")
 
                 plt.subplot(132)
-                plt.imshow(test_labels[show_num].reshape(64, 64))
+                plt.imshow(test_labels[show_num].reshape(self.lbl_rows, self.lbl_cols))
                 plt.title("blurred image (input)")
 
                 plt.subplot(133)
-                plt.imshow(test_gen_imgs[show_num].reshape(32, 32))
+                plt.imshow(test_gen_imgs[show_num].reshape(self.img_rows, self.img_cols))
                 plt.title("predicted source (output)")
 
                 if show_plots == True:

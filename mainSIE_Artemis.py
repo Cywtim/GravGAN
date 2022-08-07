@@ -19,12 +19,13 @@ if __name__ == '__main__':
                       lbl_size=(256, 256, 1))
     real_1 = Gan.lens2source_train(
                        epochs=5000, batch_size=128,
+                       train_im_path="/project/Redshift_Difference/GravGan/gray",
                        train_lb_path="/project/Redshift_Difference/GravGan/SIElensed",
                        progress=True, progress_interval=50, progress_save=True,
                        progress_file="/project/Redshift_Difference/GravGan/SIEresult/progress.log",
                        plot_image=True, save_plots=True, plot_save_iter=100,
                        save_plots_path="/project/Redshift_Difference/GravGan/SIEresult",
-                       save_plots_type="pdf", save_iter=50,
+                       save_plots_type="png", save_iter=50,
                        savegfile="/project/Redshift_Difference/GravGan/SIEresult/Generator",
                        savedfile="/project/Redshift_Difference/GravGanSIEresult/Descriminator",
                        )

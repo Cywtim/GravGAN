@@ -114,10 +114,12 @@ class LensReconstruction():
     def load_image(self, fold_path, str_num, img_type="png", as_gray=True,
                    readmethod=cv2.IMREAD_GRAYSCALE):
 
+
         str_num = str(str_num)
         str_num = str_num.zfill(6)
         file_path = fold_path + r"/image_" + str_num + r"." + img_type
         img = cv2.imread(file_path, readmethod)
+
 
         return img
 
@@ -280,7 +282,7 @@ class LensReconstruction():
 
     def lens2source_train(self, epochs, batch_size=128, train_im_path="gray",
               train_lb_path="lensed",
-              img_type="png", as_gray=True,
+              img_type="png",
               readmethod=cv2.IMREAD_GRAYSCALE,
               progress=False, progress_interval=20, progress_save=True, progress_file="result/progress.log",
               plot_image=False, show_plots=False,
@@ -332,7 +334,7 @@ class LensReconstruction():
 
             # gain datasets
             #select batch numbers
-            batch_list = np.random.randint([400 for i in range(128)])
+            batch_list = np.random.randint([400 for i in range(batch_size)])
             # the im_train/lb_train is in form of (number, row, col, channel)
 
             im_train = self.batch_load_image(batch_list, train_im_path,
@@ -355,8 +357,8 @@ class LensReconstruction():
             # get random labels
             idx = np.random.randint(0, im_train.shape[0], batch_size)
             idx_noise = np.random.randint(0, im_train.shape[0], batch_size)
-            imgs, labels = im_train[idx], lb_train[idx]  # n x n # n x n
-            fake_label = lb_train[idx_noise]  # batch_size of n x n matrix
+            imgs, labels = im_train[idx]/127.5 - 1, lb_train[idx]/127.5 -1  # n x n # n x n
+            fake_label = lb_train[idx_noise]/127.5 - 1  # batch_size of n x n matrix
 
             # generate fake images
             gen_imgs = self.generator.predict(fake_label)
@@ -371,7 +373,6 @@ class LensReconstruction():
             ##################
 
             self.discriminator.trainable = False
-
             g_loss = self.combined.train_on_batch([imgs, labels], [valid, imgs])
 
             ##########
@@ -391,26 +392,30 @@ class LensReconstruction():
             #output images
             if plot_image == True:
 
-                im_test = np.load(self.testset_path[0])
-                lb_test = np.load(self.testset_path[1])
+                im_test = self.batch_load_image(batch_list, train_im_path,
+                                                img_type=img_type,
+                                                readmethod=readmethod)
+                lb_test = self.batch_load_image(batch_list, train_lb_path,
+                                                img_type=img_type,
+                                                readmethod=readmethod)
 
                 test_rand = np.random.randint(0, len(im_train), batch_size)
-                test_imgs, test_labels = im_test[test_rand], lb_test[test_rand]  # n # n
+                test_imgs, test_labels = im_test[test_rand]/127.5 - 1, lb_test[test_rand]/127.5 - 1  # n # n
                 test_gen_imgs = self.generator.predict(test_labels)
 
-                show_num = np.random.randint(128)
+                show_num = np.random.randint(batch_size)
                 plt.figure(1, figsize=(20, 6))
 
                 plt.subplot(131)
-                plt.imshow(test_imgs[show_num].reshape(32, 32))
+                plt.imshow(test_imgs[show_num].reshape(self.img_rows, self.img_cols))
                 plt.title("origin source")
 
                 plt.subplot(132)
-                plt.imshow(test_labels[show_num].reshape(64, 64))
+                plt.imshow(test_labels[show_num].reshape(self.lbl_rows, self.lbl_cols))
                 plt.title("blurred image (input)")
 
                 plt.subplot(133)
-                plt.imshow(test_gen_imgs[show_num].reshape(32, 32))
+                plt.imshow(test_gen_imgs[show_num].reshape(self.img_rows, self.img_cols))
                 plt.title("predicted source (output)")
 
                 if show_plots == True:
